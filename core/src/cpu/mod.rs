@@ -1,4 +1,40 @@
+pub mod opcodes;
+
 use crate::utils::*;
+
+#[derive(Copy, Clone)]
+pub enum Regs8 {
+    A,
+    B,
+    C,
+    D,
+    E,
+    F,
+    H,
+    L,
+    // Some operations are still 8-bit, but perform them on a 16-bit RAM location
+    HL,
+}
+
+#[derive(Copy, Clone)]
+pub enum Regs16 {
+    AF,
+    BC,
+    DE,
+    HL,
+    SP,
+}
+
+pub enum Flags {
+    // Zero
+    Z,
+    // Subtract/negative
+    N,
+    // Half-carry
+    H,
+    // Carry
+    C,
+}
 
 pub struct Cpu {
     pc: u16,
@@ -39,6 +75,10 @@ impl Cpu {
             Regs8::F => self.f,
             Regs8::H => self.h,
             Regs8::L => self.l,
+            Regs8::HL => {
+                let addr = self.get_r16(Regs16::HL);
+                self.read_ram(addr)
+            }
         }
     }
 
@@ -52,6 +92,10 @@ impl Cpu {
             Regs8::F => self.f = val & 0xF0,
             Regs8::H => self.h = val,
             Regs8::L => self.l = val,
+            Regs8::HL => {
+                let addr = self.get_r16(Regs16::HL);
+                self.write_ram(addr, val);
+            }
         }
     }
 
@@ -117,32 +161,59 @@ impl Cpu {
             }
         }
     }
-}
 
-#[derive(Copy, Clone)]
-pub enum Regs8 {
-    A,
-    B,
-    C,
-    D,
-    E,
-    F,
-    H,
-    L,
-}
+    pub fn fetch(&mut self) -> u8 {
+        let val = self.read_ram(self.pc);
+        self.pc += 1;
+        val
+    }
 
-#[derive(Copy, Clone)]
-pub enum Regs16 {
-    AF,
-    BC,
-    DE,
-    HL,
-    SP,
-}
+    pub fn fetch_u16(&mut self) -> u16 {
+        let low = self.fetch();
+        let high = self.fetch();
+        let val = merge_bytes(high, low);
+        val
+    }
 
-pub enum Flags {
-    Z,
-    N,
-    H,
-    C,
+    pub fn read_ram(&self, addr: u16) -> u8 {
+        todo!();
+    }
+
+    pub fn write_ram(&self, addr: u16, val: u8) -> u8 {
+        todo!();
+    }
+
+    pub fn dec_r16(&mut self, r: Regs16) {
+        let val = self.get_r16(r);
+        let dec = val.wrapping_sub(1);
+        self.set_r16(r, dec);
+    }
+
+    pub fn inc_r16(&mut self, r: Regs16) {
+        let val = self.get_r16(r);
+        let inc = val.wrapping_add(1);
+        self.set_r16(r, inc);
+    }
+
+    pub fn dec_r8(&mut self, r: Regs8) {
+        let val = self.get_r8(r);
+        let dec = val.wrapping_sub(1);
+        let set_h = check_h_borrow_u8(val, 1);
+
+        self.set_r8(r, dec);
+        self.set_flag(Flags::N, true);
+        self.set_flag(Flags::Z, dec == 0);
+        self.set_flag(Flags::H, set_h);
+    }
+
+    pub fn inc_r8(&mut self, r: Regs8) {
+        let val = self.get_r8(r);
+        let inc = val.wrapping_add(1);
+        let set_h = check_h_carry_u8(val, 1);
+
+        self.set_r8(r, inc);
+        self.set_flag(Flags::N, false);
+        self.set_flag(Flags::Z, inc == 0);
+        self.set_flag(Flags::H, set_h);
+    }
 }
