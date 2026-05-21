@@ -14,8 +14,6 @@ pub enum Regs8 {
     L,
     // Some operations are still 8-bit, but perform them on a 16-bit RAM location
     HL,
-    BC,
-    DE,
 }
 
 #[derive(Copy, Clone)]
@@ -81,14 +79,6 @@ impl Cpu {
                 let addr = self.get_r16(Regs16::HL);
                 self.read_ram(addr)
             }
-            Regs8::BC => {
-                let addr = self.get_r16(Regs16::BC);
-                self.read_ram(addr)
-            }
-            Regs8::DE => {
-                let addr = self.get_r16(Regs16::DE);
-                self.read_ram(addr)
-            }
         }
     }
 
@@ -106,14 +96,6 @@ impl Cpu {
                 let addr = self.get_r16(Regs16::HL);
                 self.write_ram(addr, val);
             }
-            Regs8::BC => {
-                let addr = self.get_r16(Regs16::BC);
-                self.write_ram(addr, val);
-            }
-            Regs8::DE => {
-                let addr = self.get_r16(Regs16::DE);
-                self.write_ram(addr, val);
-            },
         }
     }
 
@@ -233,5 +215,77 @@ impl Cpu {
         self.set_flag(Flags::N, false);
         self.set_flag(Flags::Z, inc == 0);
         self.set_flag(Flags::H, set_h);
+    }
+
+    pub fn add_a_u8(&mut self, val: u8, is_carry: bool) {
+        let a = self.get_r8(Regs8::A);
+        let (result1, is_overflow1) = a.overflowing_add(val);
+        let check_h1 = check_h_carry_u8(a, val);
+
+        let (result2, _) = result1.carrying_add(result1, is_carry);
+        let check_h2 = check_h_carry_u8(result2, 0);
+
+        let set_h = check_h1 || check_h2;
+        let set_c = is_overflow1 || is_overflow1;
+
+        self.set_flag(Flags::Z, result2 == 0);
+        self.set_flag(Flags::N, false);
+        self.set_flag(Flags::H, set_h);
+        self.set_flag(Flags::C, set_c);
+        self.set_r8(Regs8::A, result2)
+    }
+
+    pub fn and_a_u8(&mut self, val: u8) {
+        let mut a = self.get_r8(Regs8::A);
+        a &= val;
+
+        self.set_r8(Regs8::A, a);
+        self.set_flag(Flags::Z, a == 0);
+        self.set_flag(Flags::N, false);
+        self.set_flag(Flags::H, true);
+        self.set_flag(Flags::C, false);
+    }
+
+    pub fn and_a_u8_regs(&mut self, register: Regs8) {
+        let val = self.get_r8(register);
+        self.and_a_u8(val);
+    }
+
+    pub fn sub_a_u8(&mut self, val: u8, is_carry: bool) {
+        let a = self.get_r8(Regs8::A);
+        let (result1, is_overflow1) = a.overflowing_sub(val);
+        let check_h1 = check_h_borrow_u8(a, val);
+
+        let (result2, is_overflow2) = result1.borrowing_sub(result1, is_carry);
+        let check_h2 = check_h_borrow_u8(result2, 0);
+        let set_h = check_h1 || check_h2;
+
+        self.set_flag(Flags::N, true);
+        self.set_flag(Flags::Z, result2 == 0);
+        self.set_flag(Flags::H, set_h);
+        self.set_flag(Flags::C, is_overflow1 || is_overflow2);
+        self.set_r8(Regs8::A, result2);
+    }
+
+    pub fn cp_a_u8(&mut self, val: u8) {
+        let a = self.get_r8(Regs8::A);
+        let set_h = check_h_borrow_u8(a, val);
+
+        self.set_flag(Flags::Z, a == val);
+        self.set_flag(Flags::N, true);
+        self.set_flag(Flags::H, set_h);
+        self.set_flag(Flags::C, a < val);
+    }
+
+    pub fn add_r16(&mut self, target_register: Regs16, source_register: Regs16) {
+        let target = self.get_r16(target_register);
+        let source = self.get_r16(source_register);
+        let (result, is_overflow) = target.overflowing_add(source);
+        let set_h = check_h_carry_u16(target, source);
+
+        self.set_r16(target_register, result);
+        self.set_flag(Flags::N, false);
+        self.set_flag(Flags::H, set_h);
+        self.set_flag(Flags::C, is_overflow);
     }
 }

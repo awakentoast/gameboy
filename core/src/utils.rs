@@ -1,3 +1,18 @@
+macro_rules! flags {
+    (
+        $z:tt
+        $n:tt
+        $h:tt
+        $c:tt
+    ) => {
+    // emit nothing for '-'
+    (@arm $flag:ident, -)      => {};
+    // emit the call for true/false
+    (@arm $flag:ident, $val:expr) => {
+        self.set_flag(Flags::$flag, $val);
+    };}
+    }
+
 pub fn merge_bytes(high: u8, low: u8) -> u16 {
     ((high as u16) << 8) | (low as u16)
 }
