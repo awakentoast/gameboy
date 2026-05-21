@@ -327,10 +327,6 @@ impl Cpu {
         self.or_a_u8(val);
     }
 
-
-
-
-
     pub fn cp_a_u8(&mut self, val: u8) {
         let a = self.get_r8(Regs8::A);
         let set_h = check_h_borrow_u8(a, val);

@@ -756,7 +756,6 @@ fn add_82(cpu: &mut Cpu) -> u8 {
     1
 }
 
-
 fn add_83(cpu: &mut Cpu) -> u8 {
     cpu.add_a_u8_from_register(Regs8::E, false);
     1
@@ -797,7 +796,6 @@ fn adc_8a(cpu: &mut Cpu) -> u8 {
     cpu.add_a_u8_from_register(Regs8::D, true);
     1
 }
-
 
 fn adc_8b(cpu: &mut Cpu) -> u8 {
     cpu.add_a_u8_from_register(Regs8::E, true);
@@ -840,7 +838,6 @@ fn sub_92(cpu: &mut Cpu) -> u8 {
     1
 }
 
-
 fn sub_93(cpu: &mut Cpu) -> u8 {
     cpu.sub_a_u8_from_register(Regs8::E, false);
     1
@@ -881,7 +878,6 @@ fn sbc_9a(cpu: &mut Cpu) -> u8 {
     cpu.sub_a_u8_from_register(Regs8::D, true);
     1
 }
-
 
 fn sbc_9b(cpu: &mut Cpu) -> u8 {
     cpu.sub_a_u8_from_register(Regs8::E, true);
@@ -924,7 +920,6 @@ fn and_a2(cpu: &mut Cpu) -> u8 {
     1
 }
 
-
 fn and_a3(cpu: &mut Cpu) -> u8 {
     cpu.and_a_u8_from_register(Regs8::E);
     1
@@ -965,7 +960,6 @@ fn xor_aa(cpu: &mut Cpu) -> u8 {
     cpu.xor_a_u8_from_register(Regs8::D);
     1
 }
-
 
 fn xor_ab(cpu: &mut Cpu) -> u8 {
     cpu.xor_a_u8_from_register(Regs8::E);
@@ -1008,7 +1002,6 @@ fn or_b2_(cpu: &mut Cpu) -> u8 {
     1
 }
 
-
 fn or_b3_(cpu: &mut Cpu) -> u8 {
     cpu.or_a_u8_from_register(Regs8::E);
     1
@@ -1049,7 +1042,6 @@ fn cp_ba_(cpu: &mut Cpu) -> u8 {
     cpu.cp_a_u8_from_register(Regs8::D);
     1
 }
-
 
 fn cp_bb_(cpu: &mut Cpu) -> u8 {
     cpu.cp_a_u8_from_register(Regs8::E);
@@ -1124,9 +1116,3 @@ fn cp_fe_(cpu: &mut Cpu) -> u8 {
     cpu.cp_a_u8(val);
     2
 }
-
-
-
-
-
-
