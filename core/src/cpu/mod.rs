@@ -235,6 +235,32 @@ impl Cpu {
         self.set_r8(Regs8::A, result2)
     }
 
+    pub fn add_a_u8_from_register(&mut self, register: Regs8, is_carry: bool) {
+        let val = self.get_r8(register);
+        self.add_a_u8(val, is_carry);
+    }
+
+    pub fn sub_a_u8(&mut self, val: u8, is_borrow: bool) {
+        let a = self.get_r8(Regs8::A);
+        let (result1, is_overflow1) = a.overflowing_sub(val);
+        let check_h1 = check_h_borrow_u8(a, val);
+
+        let (result2, is_overflow2) = result1.borrowing_sub(result1, is_borrow);
+        let check_h2 = check_h_borrow_u8(result2, 0);
+        let set_h = check_h1 || check_h2;
+
+        self.set_flag(Flags::N, true);
+        self.set_flag(Flags::Z, result2 == 0);
+        self.set_flag(Flags::H, set_h);
+        self.set_flag(Flags::C, is_overflow1 || is_overflow2);
+        self.set_r8(Regs8::A, result2);
+    }
+
+    pub fn sub_a_u8_from_register(&mut self, register: Regs8, is_borrow: bool) {
+        let val = self.get_r8(register);
+        self.sub_a_u8(val, is_borrow);
+    }
+
     pub fn and_a_u8(&mut self, val: u8) {
         let mut a = self.get_r8(Regs8::A);
         a &= val;
@@ -246,26 +272,46 @@ impl Cpu {
         self.set_flag(Flags::C, false);
     }
 
-    pub fn and_a_u8_regs(&mut self, register: Regs8) {
+    pub fn and_a_u8_from_register(&mut self, register: Regs8) {
         let val = self.get_r8(register);
         self.and_a_u8(val);
     }
 
-    pub fn sub_a_u8(&mut self, val: u8, is_carry: bool) {
-        let a = self.get_r8(Regs8::A);
-        let (result1, is_overflow1) = a.overflowing_sub(val);
-        let check_h1 = check_h_borrow_u8(a, val);
+    pub fn xor_a_u8(&mut self, val: u8) {
+        let mut a = self.get_r8(Regs8::A);
+        a ^= val;
 
-        let (result2, is_overflow2) = result1.borrowing_sub(result1, is_carry);
-        let check_h2 = check_h_borrow_u8(result2, 0);
-        let set_h = check_h1 || check_h2;
-
-        self.set_flag(Flags::N, true);
-        self.set_flag(Flags::Z, result2 == 0);
-        self.set_flag(Flags::H, set_h);
-        self.set_flag(Flags::C, is_overflow1 || is_overflow2);
-        self.set_r8(Regs8::A, result2);
+        self.set_r8(Regs8::A, a);
+        self.set_flag(Flags::Z, a == 0);
+        self.set_flag(Flags::N, false);
+        self.set_flag(Flags::H, false);
+        self.set_flag(Flags::C, false);
     }
+
+    pub fn xor_a_u8_from_register(&mut self, register: Regs8) {
+        let val = self.get_r8(register);
+        self.xor_a_u8(val);
+    }
+
+    pub fn or_a_u8(&mut self, val: u8) {
+        let mut a = self.get_r8(Regs8::A);
+        a |= val;
+
+        self.set_r8(Regs8::A, a);
+        self.set_flag(Flags::Z, a == 0);
+        self.set_flag(Flags::N, false);
+        self.set_flag(Flags::H, false);
+        self.set_flag(Flags::C, false);
+    }
+
+    pub fn or_a_u8_from_register(&mut self, register: Regs8) {
+        let val = self.get_r8(register);
+        self.or_a_u8(val);
+    }
+    
+    
+
+    
 
     pub fn cp_a_u8(&mut self, val: u8) {
         let a = self.get_r8(Regs8::A);
@@ -275,6 +321,11 @@ impl Cpu {
         self.set_flag(Flags::N, true);
         self.set_flag(Flags::H, set_h);
         self.set_flag(Flags::C, a < val);
+    }
+
+    pub fn cp_a_u8_from_register(&mut self, register: Regs8) {
+        let val = self.get_r8(register);
+        self.cp_a_u8(val);
     }
 
     pub fn add_r16(&mut self, target_register: Regs16, source_register: Regs16) {
