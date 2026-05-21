@@ -22,8 +22,8 @@ const OPCODES: [fn(&mut Cpu) -> u8; 256] = [
     or_b0_, or_b1_, or_b2_, or_b3_, or_b4_, or_b5_, or_b6_, or_b7_, cp_b8_, cp_b9_, cp_ba_, cp_bb_, cp_bc_, cp_bd_, cp_be_, cp_bf_, // 0xB0
     todo_0, todo_0, todo_0, todo_0, todo_0, todo_0, add_c6, todo_0, todo_0, todo_0, todo_0, todo_0, todo_0, todo_0, adc_ce, todo_0, // 0xC0
     todo_0, todo_0, todo_0, todo_0, todo_0, todo_0, sub_d6, todo_0, todo_0, todo_0, todo_0, todo_0, todo_0, todo_0, sbc_de, todo_0, // 0xD0
-    ldh_e0, todo_0, ldh_e2, todo_0, todo_0, todo_0, and_e6, todo_0, todo_0, todo_0, ldh_ea, todo_0, todo_0, todo_0, xor_ee, todo_0, // 0xE0
-    ldh_f0, todo_0, ldh_f2, todo_0, todo_0, todo_0, or_f6_, todo_0, ld_f8_, ld_f9_, ldh_fa, todo_0, todo_0, todo_0, cp_fe_, todo_0, // 0xF0
+    ldh_e0, todo_0, ldh_e2, todo_0, todo_0, todo_0, and_e6, todo_0, todo_0, todo_0, ld_ea_, todo_0, todo_0, todo_0, xor_ee, todo_0, // 0xE0
+    ldh_f0, todo_0, ldh_f2, todo_0, todo_0, todo_0, or_f6_, todo_0, ld_f8_, ld_f9_, ld_fa_, todo_0, todo_0, todo_0, cp_fe_, todo_0, // 0xF0
 ];
 
 #[allow(unused)]
@@ -61,30 +61,28 @@ fn ld_31_(cpu: &mut Cpu) -> u8 {
 }
 
 fn ld_02_(cpu: &mut Cpu) -> u8 {
-    let addr = cpu.get_r16(Regs16::BC);
     let val = cpu.get_r8(Regs8::A);
-    cpu.write_ram(addr, val);
+    cpu.set_r8(Regs8::BC, val);
     2
 }
 
 fn ld_12_(cpu: &mut Cpu) -> u8 {
-    let addr = cpu.get_r16(Regs16::DE);
     let val = cpu.get_r8(Regs8::A);
-    cpu.write_ram(addr, val);
+    cpu.set_r8(Regs8::DE, val);
     2
 }
 
 fn ld_22_(cpu: &mut Cpu) -> u8 {
-    let addr = cpu.get_r16(Regs16::HL);
     let val = cpu.get_r8(Regs8::A);
-    cpu.write_ram(addr, val.wrapping_add(1));
+    cpu.set_r8(Regs8::HL, val);
+    cpu.inc_r16(Regs16::HL);
     2
 }
 
 fn ld_32_(cpu: &mut Cpu) -> u8 {
-    let addr = cpu.get_r16(Regs16::HL);
     let val = cpu.get_r8(Regs8::A);
-    cpu.write_ram(addr, val.wrapping_sub(1));
+    cpu.set_r8(Regs8::HL, val);
+    cpu.dec_r16(Regs16::HL);
     2
 }
 
@@ -113,32 +111,30 @@ fn ld_36_(cpu: &mut Cpu) -> u8 {
 }
 
 fn ld_0a_(cpu: &mut Cpu) -> u8 {
-    let addr = cpu.get_r16(Regs16::BC);
-    let val = cpu.read_ram(addr);
+    let val = cpu.get_r8(Regs8::BC);
     cpu.set_r8(Regs8::A, val);
     2
 }
 
 fn ld_1a_(cpu: &mut Cpu) -> u8 {
-    let addr = cpu.get_r16(Regs16::DE);
-    let val = cpu.read_ram(addr);
+    let val = cpu.get_r8(Regs8::DE);
     cpu.set_r8(Regs8::A, val);
     2
 }
 
 fn ld_2a_(cpu: &mut Cpu) -> u8 {
-    let addr = cpu.get_r16(Regs16::HL);
-    let val = cpu.read_ram(addr);
+    let val = cpu.get_r8(Regs8::HL);
     cpu.set_r8(Regs8::A, val);
-    cpu.set_r16(Regs16::HL, addr.wrapping_add(1));
+
+    cpu.inc_r16(Regs16::HL);
     2
 }
 
 fn ld_3a_(cpu: &mut Cpu) -> u8 {
-    let addr = cpu.get_r16(Regs16::HL);
-    let val = cpu.read_ram(addr);
+    let val = cpu.get_r8(Regs8::HL);
     cpu.set_r8(Regs8::A, val);
-    cpu.set_r16(Regs16::HL, addr.wrapping_sub(1));
+
+    cpu.dec_r16(Regs16::HL);
     2
 }
 
@@ -203,8 +199,7 @@ fn ld_45_(cpu: &mut Cpu) -> u8 {
 }
 
 fn ld_46_(cpu: &mut Cpu) -> u8 {
-    let addr = cpu.get_r16(Regs16::HL);
-    let val = cpu.read_ram(addr);
+    let val = cpu.get_r8(Regs8::HL);
     cpu.set_r8(Regs8::B, val);
     2
 }
@@ -252,8 +247,7 @@ fn ld_4d_(cpu: &mut Cpu) -> u8 {
 }
 
 fn ld_4e_(cpu: &mut Cpu) -> u8 {
-    let addr = cpu.get_r16(Regs16::HL);
-    let val = cpu.read_ram(addr);
+    let val = cpu.get_r8(Regs8::HL);
     cpu.set_r8(Regs8::C, val);
     2
 }
@@ -301,8 +295,7 @@ fn ld_55_(cpu: &mut Cpu) -> u8 {
 }
 
 fn ld_56_(cpu: &mut Cpu) -> u8 {
-    let addr = cpu.get_r16(Regs16::HL);
-    let val = cpu.read_ram(addr);
+    let val = cpu.get_r8(Regs8::HL);
     cpu.set_r8(Regs8::D, val);
     2
 }
@@ -350,8 +343,7 @@ fn ld_5d_(cpu: &mut Cpu) -> u8 {
 }
 
 fn ld_5e_(cpu: &mut Cpu) -> u8 {
-    let addr = cpu.get_r16(Regs16::HL);
-    let val = cpu.read_ram(addr);
+    let val = cpu.get_r8(Regs8::HL);
     cpu.set_r8(Regs8::E, val);
     2
 }
@@ -399,8 +391,7 @@ fn ld_65_(cpu: &mut Cpu) -> u8 {
 }
 
 fn ld_66_(cpu: &mut Cpu) -> u8 {
-    let addr = cpu.get_r16(Regs16::HL);
-    let val = cpu.read_ram(addr);
+    let val = cpu.get_r8(Regs8::HL);
     cpu.set_r8(Regs8::H, val);
     2
 }
@@ -448,8 +439,7 @@ fn ld_6d_(cpu: &mut Cpu) -> u8 {
 }
 
 fn ld_6e_(cpu: &mut Cpu) -> u8 {
-    let addr = cpu.get_r16(Regs16::HL);
-    let val = cpu.read_ram(addr);
+    let val = cpu.get_r8(Regs8::HL);
     cpu.set_r8(Regs8::L, val);
     2
 }
@@ -462,50 +452,43 @@ fn ld_6f_(cpu: &mut Cpu) -> u8 {
 
 fn ld_70_(cpu: &mut Cpu) -> u8 {
     let val = cpu.get_r8(Regs8::B);
-    let addr = cpu.get_r16(Regs16::HL);
-    cpu.write_ram(addr, val);
+    cpu.set_r8(Regs8::HL, val);
     2
 }
 
 fn ld_71_(cpu: &mut Cpu) -> u8 {
     let val = cpu.get_r8(Regs8::C);
-    let addr = cpu.get_r16(Regs16::HL);
-    cpu.write_ram(addr, val);
+    cpu.set_r8(Regs8::HL, val);
     2
 }
 
 fn ld_72_(cpu: &mut Cpu) -> u8 {
     let val = cpu.get_r8(Regs8::D);
-    let addr = cpu.get_r16(Regs16::HL);
-    cpu.write_ram(addr, val);
+    cpu.set_r8(Regs8::HL, val);
     2
 }
 
 fn ld_73_(cpu: &mut Cpu) -> u8 {
     let val = cpu.get_r8(Regs8::E);
-    let addr = cpu.get_r16(Regs16::HL);
-    cpu.write_ram(addr, val);
+    cpu.set_r8(Regs8::HL, val);
     2
 }
 
 fn ld_74_(cpu: &mut Cpu) -> u8 {
     let val = cpu.get_r8(Regs8::H);
-    let addr = cpu.get_r16(Regs16::HL);
-    cpu.write_ram(addr, val);
+    cpu.set_r8(Regs8::HL, val);
     2
 }
 
 fn ld_75_(cpu: &mut Cpu) -> u8 {
     let val = cpu.get_r8(Regs8::L);
-    let addr = cpu.get_r16(Regs16::HL);
-    cpu.write_ram(addr, val);
+    cpu.set_r8(Regs8::HL, val);
     2
 }
 
 fn ld_77_(cpu: &mut Cpu) -> u8 {
     let val = cpu.get_r8(Regs8::A);
-    let addr = cpu.get_r16(Regs16::HL);
-    cpu.write_ram(addr, val);
+    cpu.set_r8(Regs8::HL, val);
     1
 }
 
@@ -546,8 +529,7 @@ fn ld_7d_(cpu: &mut Cpu) -> u8 {
 }
 
 fn ld_7e_(cpu: &mut Cpu) -> u8 {
-    let addr = cpu.get_r16(Regs16::HL);
-    let val = cpu.read_ram(addr);
+    let val = cpu.get_r8(Regs8::HL);
     cpu.set_r8(Regs8::A, val);
     2
 }
@@ -561,6 +543,7 @@ fn ld_7f_(cpu: &mut Cpu) -> u8 {
 fn ld_08_(cpu: &mut Cpu) -> u8 {
     let addr = cpu.fetch_u16();
     let val = cpu.get_r16(Regs16::SP);
+
     cpu.write_ram(addr, val.low_byte());
     cpu.write_ram(addr + 1, val.high_byte());
     5
@@ -604,6 +587,7 @@ fn inc_24(cpu: &mut Cpu) -> u8 {
 fn inc_34(cpu: &mut Cpu) -> u8 {
     let addr = cpu.get_r16(Regs16::HL);
     let val = cpu.read_ram(addr);
+
     cpu.write_ram(addr, val.wrapping_add(1));
     3
 }
@@ -646,6 +630,7 @@ fn dec_25(cpu: &mut Cpu) -> u8 {
 fn dec_35(cpu: &mut Cpu) -> u8 {
     let addr = cpu.get_r16(Regs16::HL);
     let val = cpu.read_ram(addr);
+
     cpu.write_ram(addr, val.wrapping_sub(1));
     3
 }
@@ -722,14 +707,14 @@ fn ldh_f2(cpu: &mut Cpu) -> u8 {
     2
 }
 
-fn ldh_ea(cpu: &mut Cpu) -> u8 {
+fn ld_ea_(cpu: &mut Cpu) -> u8 {
     let addr = cpu.fetch_u16();
     let val = cpu.get_r8(Regs8::A);
     cpu.write_ram(addr, val);
     4
 }
 
-fn ldh_fa(cpu: &mut Cpu) -> u8 {
+fn ld_fa_(cpu: &mut Cpu) -> u8 {
     let addr = cpu.fetch_u16();
     let val = cpu.read_ram(addr);
     cpu.set_r8(Regs8::A, val);
@@ -788,8 +773,7 @@ fn add_85(cpu: &mut Cpu) -> u8 {
 }
 
 fn add_86(cpu: &mut Cpu) -> u8 {
-    let addr = cpu.get_r16(Regs16::HL);
-    let val = cpu.read_ram(addr);
+    let val = cpu.get_r8(Regs8::HL);
     cpu.add_a_u8(val, false);
     2
 }
@@ -831,8 +815,7 @@ fn adc_8d(cpu: &mut Cpu) -> u8 {
 }
 
 fn adc_8e(cpu: &mut Cpu) -> u8 {
-    let addr = cpu.get_r16(Regs16::HL);
-    let val = cpu.read_ram(addr);
+    let val = cpu.get_r8(Regs8::HL);
     cpu.add_a_u8(val, true);
     2
 }
@@ -874,8 +857,7 @@ fn sub_95(cpu: &mut Cpu) -> u8 {
 }
 
 fn sub_96(cpu: &mut Cpu) -> u8 {
-    let addr = cpu.get_r16(Regs16::HL);
-    let val = cpu.read_ram(addr);
+    let val = cpu.get_r8(Regs8::HL);
     cpu.sub_a_u8(val, false);
     2
 }
@@ -917,8 +899,7 @@ fn sbc_9d(cpu: &mut Cpu) -> u8 {
 }
 
 fn sbc_9e(cpu: &mut Cpu) -> u8 {
-    let addr = cpu.get_r16(Regs16::HL);
-    let val = cpu.read_ram(addr);
+    let val = cpu.get_r8(Regs8::HL);
     cpu.sub_a_u8(val, true);
     2
 }
@@ -960,8 +941,7 @@ fn and_a5(cpu: &mut Cpu) -> u8 {
 }
 
 fn and_a6(cpu: &mut Cpu) -> u8 {
-    let addr = cpu.get_r16(Regs16::HL);
-    let val = cpu.read_ram(addr);
+    let val = cpu.get_r8(Regs8::HL);
     cpu.and_a_u8(val);
     2
 }
@@ -1003,8 +983,7 @@ fn xor_ad(cpu: &mut Cpu) -> u8 {
 }
 
 fn xor_ae(cpu: &mut Cpu) -> u8 {
-    let addr = cpu.get_r16(Regs16::HL);
-    let val = cpu.read_ram(addr);
+    let val = cpu.get_r8(Regs8::HL);
     cpu.xor_a_u8(val);
     2
 }
@@ -1046,8 +1025,7 @@ fn or_b5_(cpu: &mut Cpu) -> u8 {
 }
 
 fn or_b6_(cpu: &mut Cpu) -> u8 {
-    let addr = cpu.get_r16(Regs16::HL);
-    let val = cpu.read_ram(addr);
+    let val = cpu.get_r8(Regs8::HL);
     cpu.or_a_u8(val);
     2
 }
@@ -1089,8 +1067,7 @@ fn cp_bd_(cpu: &mut Cpu) -> u8 {
 }
 
 fn cp_be_(cpu: &mut Cpu) -> u8 {
-    let addr = cpu.get_r16(Regs16::HL);
-    let val = cpu.read_ram(addr);
+    let val = cpu.get_r8(Regs8::HL);
     cpu.cp_a_u8(val);
     2
 }

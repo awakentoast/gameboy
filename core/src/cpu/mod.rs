@@ -14,6 +14,8 @@ pub enum Regs8 {
     L,
     // Some operations are still 8-bit, but perform them on a 16-bit RAM location
     HL,
+    BC,
+    DE,
 }
 
 #[derive(Copy, Clone)]
@@ -79,6 +81,14 @@ impl Cpu {
                 let addr = self.get_r16(Regs16::HL);
                 self.read_ram(addr)
             }
+            Regs8::BC => {
+                let addr = self.get_r16(Regs16::HL);
+                self.read_ram(addr)
+            }
+            Regs8::DE => {
+                let addr = self.get_r16(Regs16::HL);
+                self.read_ram(addr)
+            }
         }
     }
 
@@ -93,6 +103,14 @@ impl Cpu {
             Regs8::H => self.h = val,
             Regs8::L => self.l = val,
             Regs8::HL => {
+                let addr = self.get_r16(Regs16::HL);
+                self.write_ram(addr, val);
+            }
+            Regs8::BC => {
+                let addr = self.get_r16(Regs16::HL);
+                self.write_ram(addr, val);
+            }
+            Regs8::DE => {
                 let addr = self.get_r16(Regs16::HL);
                 self.write_ram(addr, val);
             }
@@ -308,10 +326,10 @@ impl Cpu {
         let val = self.get_r8(register);
         self.or_a_u8(val);
     }
-    
-    
 
-    
+
+
+
 
     pub fn cp_a_u8(&mut self, val: u8) {
         let a = self.get_r8(Regs8::A);
